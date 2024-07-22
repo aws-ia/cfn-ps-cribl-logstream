@@ -99,7 +99,7 @@ Parameters:
 Conditions:
   UsingDefaultBucket: !Equals
     - !Ref QSS3BucketName
-    - 'aws-quickstart-cribl-logstream'
+    - 'aws-ia'
 Resources:
   CriblDeploy:
     Type: AWS::CloudFormation::Stack

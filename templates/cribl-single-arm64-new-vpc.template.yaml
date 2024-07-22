@@ -191,7 +191,7 @@ Parameters:
 Conditions:
   UsingDefaultBucket: !Equals
     - !Ref QSS3BucketName
-    - 'aws-quickstart'
+    - 'aws-ia'
 Mappings:
   RegionMap:
     us-east-1:

@@ -231,7 +231,7 @@ Conditions:
       - ''
   UsingDefaultBucket: !Equals
     - !Ref QSS3BucketName
-    - 'aws-quickstart'
+    - 'aws-ia'
 Mappings:
   RegionMap:
     us-east-1:
@@ -282,7 +282,7 @@ Resources:
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/cfn-ps-aws-vpc/templates/aws-vpc.template.yaml
         - S3Bucket: !If
             - UsingDefaultBucket
-            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Sub 'aws-ia-${AWS::Region}'
             - !Ref 'QSS3BucketName'
           S3Region: !If
             - UsingDefaultBucket
