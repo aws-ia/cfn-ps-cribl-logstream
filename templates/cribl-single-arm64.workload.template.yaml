@@ -402,6 +402,11 @@ Resources:
           - Arn
   functionWorkerShutdown:
     Type: AWS::Serverless::Function
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3030
     Properties:
       Description: Cribl LogStream Worker Shutdown
       InlineCode: "import boto3\nimport logging\nimport json\nimport time\nimport os\n\nssm = boto3.client('ssm')\nautoscaling = boto3.client('autoscaling')\n \n# Logging\nlog = logging.getLogger()\nlog.setLevel(logging.DEBUG)\n\

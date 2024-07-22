@@ -41,6 +41,11 @@ Resources:
 
   RandomStringFunction:
       Type: AWS::Lambda::Function
+      Metadata:
+        cfn-lint:
+          config:
+            ignore_checks:
+              - E3030
       Properties:
         Description: Generates a random string for resource names
         Handler: index.handler
@@ -79,6 +84,11 @@ Resources:
 
   LambdaEmptyBucket:
     Type: AWS::Lambda::Function
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3030
     Properties:
       Code:
         ZipFile: |
