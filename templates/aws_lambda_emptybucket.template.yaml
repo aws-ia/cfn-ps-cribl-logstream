@@ -41,10 +41,15 @@ Resources:
 
   RandomStringFunction:
       Type: AWS::Lambda::Function
+      Metadata:
+        cfn-lint:
+          config:
+            ignore_checks:
+              - E3030
       Properties:
         Description: Generates a random string for resource names
         Handler: index.handler
-        Runtime: python3.7
+        Runtime: python3.12
         Role: !GetAtt LambdaExecute.Arn
         Timeout: 900
         Code:
@@ -79,6 +84,11 @@ Resources:
 
   LambdaEmptyBucket:
     Type: AWS::Lambda::Function
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3030
     Properties:
       Code:
         ZipFile: |
@@ -118,7 +128,7 @@ Resources:
       Handler: index.lambda_handler
       MemorySize: 128
       PackageType: Zip
-      Runtime: python3.7
+      Runtime: python3.12
       Role: !GetAtt LambdaExecute.Arn
 
   cleanupBucketOnDelete:

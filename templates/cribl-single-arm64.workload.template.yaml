@@ -24,12 +24,56 @@ Parameters:
     AllowedValues:
       - c6g.large
       - c6g.xlarge
+      - c6gd.2xlarge #Check this - Not currently set to TRUE
+      - c6g.4xlarge
       - c6gd.large
       - c6gd.xlarge
+      - c6gd.2xlarge
+      - c6gd.4xlarge
+      - m6g.medium
       - m6g.large
       - m6g.xlarge
+      - m6gd.medium
       - m6gd.large
       - m6gd.xlarge
+      - t4g.nano
+      - t4g.micro
+      - t4g.small
+      - t4g.medium
+      - t4g.large
+      - t4g.xlarge
+      - c6gn.large
+      - c6gn.xlarge
+      - c6gn.4xlarge
+      - c7g.medium
+      - c7g.large
+      - c7g.xlarge
+      - c7g.2xlarge
+      - c7g.4xlarge
+      - m7g.medium
+      - m7g.large
+      - m7g.xlarge
+      - m7g.2xlarge
+      - m7g.4xlarge
+      - m7g.8xlarge
+      - c7gn.medium
+      - c7gn.large
+      - c7gn.xlarge
+      - c7gn.2xlarge
+      - c7gn.4xlarge
+      - c7gn.8xlarge
+      - c7gd.medium
+      - c7gd.large
+      - c7gd.xlarge
+      - c7gd.2xlarge
+      - c7gd.4xlarge
+      - c7gd.8xlarge
+      - m7gd.medium
+      - m7gd.large
+      - m7gd.xlarge
+      - m7gd.2xlarge
+      - m7gd.4xlarge
+      - m7gd.8xlarge
     ConstraintDescription: Must contain valid instance type
 Metadata:
   cfn-lint:
@@ -74,38 +118,46 @@ Rules:
         AssertDescription: All subnets must in the VPC
 Mappings:
   RegionMap:
-    eu-north-1:
-      ami: ami-024f442825535976f
-    ap-south-1:
-      ami: ami-08c37554a74085233
-    eu-west-3:
-      ami: ami-00b4befb784285e18
-    eu-west-2:
-      ami: ami-03af1bbaa5159b909
-    eu-west-1:
-      ami: ami-0fc642da59aaa3054
-    ap-northeast-2:
-      ami: ami-0d0cbd4bb503a8392
-    ap-northeast-1:
-      ami: ami-05713725331d7da87
-    sa-east-1:
-      ami: ami-06f2bd6f4bc75e1e4
-    ca-central-1:
-      ami: ami-049e89b91860c0c76
-    ap-southeast-1:
-      ami: ami-0001ccc0fa2f4bb58
-    ap-southeast-2:
-      ami: ami-030a28fd0f4425aa0
-    eu-central-1:
-      ami: ami-0a54bb2bd5e987705
     us-east-1:
-      ami: ami-0d674664089a2cc30
-    us-east-2:
-      ami: ami-0e691c58d8cbfddfd
+      ami: ami-08c058491b976c168
+    eu-west-1:
+      ami: ami-094a94ebdbf502472
     us-west-1:
-      ami: ami-0d277970fb2218635
+      ami: ami-091ab5c276dd7bf2a
+    ap-southeast-1:
+      ami: ami-02182a228584b24b0
+    ap-northeast-1:
+      ami: ami-0b6d9f1a724143d22
     us-west-2:
-      ami: ami-0be98fa4b8a367d2b
+      ami: ami-087076cf2e42a7487
+    sa-east-1:
+      ami: ami-08afb669e42fbbcb3
+    ap-southeast-2:
+      ami: ami-0a08f71bafa4db0c7
+    eu-central-1:
+      ami: ami-0372b5cc7b6087f3f
+    ap-northeast-2:
+      ami: ami-052eb8c922d3bdf01
+    us-east-2:
+      ami: ami-0d3516941b985923b
+    ca-central-1:
+      ami: ami-0459efebe968eaca1
+    eu-west-2:
+      ami: ami-026fe254ecd53a2a4
+    eu-west-3:
+      ami: ami-0a82b13793efacb65
+    ap-northeast-3:
+      ami: ami-01a594e9ed2526003
+    eu-north-1:
+      ami: ami-0703cf0fcd3138c70
+    eu-south-1:
+      ami: ami-0bf3b66d5ad31f122
+    eu-central-2:
+      ami: ami-0f5621109e0a071ee
+    eu-south-2:
+      ami: ami-05744c2f9dec5ff5c
+    ap-southeast-4:
+      ami: ami-0af7576d7e93b4b15
 Resources:
   ec2SingleSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -350,6 +402,11 @@ Resources:
           - Arn
   functionWorkerShutdown:
     Type: AWS::Serverless::Function
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3030
     Properties:
       Description: Cribl LogStream Worker Shutdown
       InlineCode: "import boto3\nimport logging\nimport json\nimport time\nimport os\n\nssm = boto3.client('ssm')\nautoscaling = boto3.client('autoscaling')\n \n# Logging\nlog = logging.getLogger()\nlog.setLevel(logging.DEBUG)\n\
@@ -383,7 +440,7 @@ Resources:
                 - ssm:GetCommandInvocation
               Effect: Allow
               Resource: '*'
-      Runtime: python3.7
+      Runtime: python3.12
       Timeout: 600
       Handler: index.handler
 Outputs:
