@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Cribl LogStream+VPC QuickStart Deployment arm64 (qs-1skh1tk4h)
+Description: Cribl Stream+VPC QuickStart Deployment arm64 (qs-1skh1tk4h)
 Metadata:
   QuickStartDocumentation:
     EntrypointName: Deploy into a new VPC
@@ -22,6 +22,7 @@ Metadata:
         Parameters:
           - instanceType
           - webAccessCidr
+          - ImageId
       - Label:
           default: AWS Quick Start configuration
         Parameters:
@@ -49,67 +50,27 @@ Metadata:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix  
+  cfn-lint: { config: { ignore_checks: [E9007] } }
 Parameters:
   AvailabilityZones:
     Description: List of Availability Zones to use for the subnets in the VPC.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   instanceType:
-    Description: EC2 instance type to provision the LogStream instance. If none specified, c6g.2xlarge is used.
+    Description: EC2 instance type to provision the Cribl Stream instance. If none specified, c6g.xlarge will be used.
     Type: String
     Default: c6g.xlarge
     AllowedValues:
+      - c6g.medium
       - c6g.large
       - c6g.xlarge
-      - c6gd.2xlarge #Check this - Not currently set to TRUE
-      - c6g.4xlarge
+      - c6gd.medium 
       - c6gd.large
       - c6gd.xlarge
-      - c6gd.2xlarge
-      - c6gd.4xlarge
       - m6g.medium
       - m6g.large
       - m6g.xlarge
-      - m6gd.medium
       - m6gd.large
       - m6gd.xlarge
-      - t4g.nano
-      - t4g.micro
-      - t4g.small
-      - t4g.medium
-      - t4g.large
-      - t4g.xlarge
-      - c6gn.large
-      - c6gn.xlarge
-      - c6gn.4xlarge
-      - c7g.medium
-      - c7g.large
-      - c7g.xlarge
-      - c7g.2xlarge
-      - c7g.4xlarge
-      - m7g.medium
-      - m7g.large
-      - m7g.xlarge
-      - m7g.2xlarge
-      - m7g.4xlarge
-      - m7g.8xlarge
-      - c7gn.medium
-      - c7gn.large
-      - c7gn.xlarge
-      - c7gn.2xlarge
-      - c7gn.4xlarge
-      - c7gn.8xlarge
-      - c7gd.medium
-      - c7gd.large
-      - c7gd.xlarge
-      - c7gd.2xlarge
-      - c7gd.4xlarge
-      - c7gd.8xlarge
-      - m7gd.medium
-      - m7gd.large
-      - m7gd.xlarge
-      - m7gd.2xlarge
-      - m7gd.4xlarge
-      - m7gd.8xlarge
     ConstraintDescription: Must contain valid instance type
   PrivateSubnet1CIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
@@ -167,7 +128,7 @@ Parameters:
     AllowedPattern: ^([0-9a-zA-Z-.]+/)*$
     ConstraintDescription: The Quick Start S3 key prefix can include numbers, lowercase letters,
       uppercase letters, hyphens (-), and forward slashes (/).
-    Default: cfn-ps-cribl-logstream/
+    Default: cfn-ps-cribl-stream/
     Description: S3 key prefix that is used to simulate a directory for your copy of the 
       Quick Start assets. Keep the default prefix unless you are customizing 
       the template. Changing this prefix updates code references to point to 
@@ -179,75 +140,29 @@ Parameters:
   webAccessCidr:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
-    Description:  "REQUIRED: The CIDR IP range permitted to access the LogStream web console. We recommend you set this value to a trusted IP range."
+    Description:  "REQUIRED: The CIDR IP range permitted to access the Cribl Stream web console. We recommend you set this value to a trusted IP range."
     Type: String
     Default: 0.0.0.0/0
+  ImageId:
+    Description: "REQUIRED: Name of the AMI for the EC2 Instance being used for your Cribl Deployment."
+    Type: AWS::EC2::Image::Id 
   VPCCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
-    Description: CIDR Block for the VPC.
+    Description: CIDR block for the VPC.
     Type: String
 Conditions:
   UsingDefaultBucket: !Equals
     - !Ref QSS3BucketName
     - 'aws-ia'
-Mappings:
-  RegionMap:
-    us-east-1:
-      ami: ami-08c058491b976c168
-    eu-west-1:
-      ami: ami-094a94ebdbf502472
-    us-west-1:
-      ami: ami-091ab5c276dd7bf2a
-    ap-southeast-1:
-      ami: ami-02182a228584b24b0
-    ap-northeast-1:
-      ami: ami-0b6d9f1a724143d22
-    us-west-2:
-      ami: ami-087076cf2e42a7487
-    sa-east-1:
-      ami: ami-08afb669e42fbbcb3
-    ap-southeast-2:
-      ami: ami-0a08f71bafa4db0c7
-    eu-central-1:
-      ami: ami-0372b5cc7b6087f3f
-    ap-northeast-2:
-      ami: ami-052eb8c922d3bdf01
-    us-east-2:
-      ami: ami-0d3516941b985923b
-    ca-central-1:
-      ami: ami-0459efebe968eaca1
-    eu-west-2:
-      ami: ami-026fe254ecd53a2a4
-    eu-west-3:
-      ami: ami-0a82b13793efacb65
-    ap-northeast-3:
-      ami: ami-01a594e9ed2526003
-    eu-north-1:
-      ami: ami-0703cf0fcd3138c70
-    eu-south-1:
-      ami: ami-0bf3b66d5ad31f122
-    eu-central-2:
-      ami: ami-0f5621109e0a071ee
-    eu-south-2:
-      ami: ami-05744c2f9dec5ff5c
-    ap-southeast-4:
-      ami: ami-0af7576d7e93b4b15
+
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/cfn-ps-aws-vpc/templates/aws-vpc.template.yaml
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub '${QSS3BucketName}-${AWS::Region}'
-            - !Ref 'QSS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QSS3BucketRegion'
+        - https://aws-ia-${AWS::Region}.s3.${AWS::Region}.${AWS::URLSuffix}/cfn-ps-aws-vpc/templates/aws-vpc.template.yaml
       Parameters:
         AvailabilityZones: !Join 
           - ','
@@ -263,15 +178,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/cribl-single-arm64.workload.template.yaml
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub '${QSS3BucketName}-${AWS::Region}'
-            - !Ref 'QSS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QSS3BucketRegion'
+        - https://aws-quickstart-cribl-stream.s3.amazonaws.com/templates/cribl-single-arm64.workload.template.yaml
       Parameters:
         webAccessCidr: !Ref webAccessCidr
         vpcId: !GetAtt
@@ -282,6 +189,7 @@ Resources:
           - - !GetAtt VPCStack.Outputs.PublicSubnet1ID
             - !GetAtt VPCStack.Outputs.PublicSubnet2ID
         instanceType: !Ref instanceType
+        ImageId: !Ref ImageId
 Outputs:
   Postdeployment:
     Description: See the deployment guide for postdeployment steps.
