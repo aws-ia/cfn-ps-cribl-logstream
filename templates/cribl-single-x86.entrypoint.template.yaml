@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Cribl LogStream Existing VPC QuickStart Deployment x86_64 (qs-1skh1tk5g)
+Description: Cribl Stream Existing VPC QuickStart Deployment x86_64 (qs-1skh1tk5g)
 Metadata:
   QuickStartDocumentation:
     EntrypointName: Deploy into an existing VPC
@@ -17,6 +17,7 @@ Metadata:
           default: Amazon EC2 configuration
         Parameters:
           - instanceType
+          - ImageId
       - Label:
           default: AWS Quick Start configuration
         Parameters:
@@ -26,6 +27,8 @@ Metadata:
     ParameterLabels:
       instanceType:
         default: EC2 instance type
+      ImageId:
+        default: AMI Image ID
       vpcId:
         default: VPC ID
       subnetIds:
@@ -41,18 +44,29 @@ Parameters:
     Description: (Required) ID of your existing VPC.
     Type: AWS::EC2::VPC::Id
   subnetIds:
-    Description: (Required) ID of two of your existing Subnet IDs. Subnets must be in the same VPC as the VPC ID."
+    Description: (Required) ID of two of your existing Subnet IDs. Subnets must be in the same VPC as the VPC ID.
     Type: List<AWS::EC2::Subnet::Id>
   webAccessCidr:
     Type: String
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
-    Description: (Required) The CIDR IP range permitted to access the LogStream web console. We recommend you set this value to a trusted IP range.
+    Description: (Required) The CIDR IP range permitted to access the Stream web console. We recommend you set this value to a trusted IP range.
   instanceType:
-    Description: EC2 instance type to provision the LogStream instance. If none specified, c5.2xlarge is used.
+    Description: EC2 instance type to provision the Cribl Stream leader instance. If none specified, c5a.xlarge will be used.
     Type: String
-    Default: c5.xlarge
+    Default: c5a.xlarge
     AllowedValues:
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3a.small
+      - t3a.medium
+      - t3a.large
       - c5.large
       - c5.xlarge
       - c5d.large
@@ -61,6 +75,14 @@ Parameters:
       - c5a.xlarge
       - c5ad.large
       - c5ad.xlarge
+      - c5n.large
+      - c5n.xlarge
+      - m5a.large
+      - m5a.xlarge
+      - m5ad.large
+      - m5ad.xlarge
+      - m5d.large
+      - m5d.xlarge
     ConstraintDescription: Must contain valid instance type
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
@@ -87,7 +109,7 @@ Parameters:
     AllowedPattern: ^([0-9a-zA-Z-.]+/)*$
     ConstraintDescription: The Quick Start S3 key prefix can include numbers, lowercase letters,
       uppercase letters, hyphens (-), and forward slashes (/).
-    Default: cfn-ps-cribl-logstream/
+    Default: cfn-ps-cribl-stream/
     Description: S3 key prefix that is used to simulate a directory for your copy of the 
       Quick Start assets. Keep the default prefix unless you are customizing 
       the template. Changing this prefix updates code references to point to 
@@ -121,6 +143,7 @@ Resources:
           - ','
           - !Ref subnetIds
         instanceType: !Ref instanceType
+        ImageId: !Ref ImageId
 Outputs:
   Postdeployment:
     Description: See the deployment guide for postdeployment steps.

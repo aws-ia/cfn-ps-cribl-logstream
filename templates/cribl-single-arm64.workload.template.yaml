@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Cribl LogStream Free Deployment arm64 (qs-1skh1tk5t)
+Description: Cribl Stream Free Deployment arm64 (qs-1skh1tk5t)
 Parameters:
   vpcId:
     Description: 'REQUIRED: ID of your existing VPC.'
@@ -12,68 +12,29 @@ Parameters:
     Type: String
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
-    Description: 'REQUIRED: The CIDR IP range permitted to access the LogStream web console. We recommend you set this value to a trusted IP range.'
+    Description: 'REQUIRED: The CIDR IP range permitted to access the Stream web console. We recommend you set this value to a trusted IP range.'
+  ImageId:
+    Description: "REQUIRED: Name of the AMI for the EC2 Instance being used for your Cribl Deployment."
+    Type: AWS::EC2::Image::Id 
   SQS:
     Description: Name of the SQS for VPCFlow Logs.
     Type: String
-    Default: cribl-vpc-sqs
   instanceType:
-    Description: EC2 instance type to provision the LogStream instance. If none specified, c6g.2xlarge will be used.
+    Description: EC2 instance type to provision the Cribl Stream instance. If none specified, c6g.xlarge will be used.
     Type: String
     Default: c6g.xlarge
     AllowedValues:
+      - c6g.medium
       - c6g.large
       - c6g.xlarge
-      - c6gd.2xlarge #Check this - Not currently set to TRUE
-      - c6g.4xlarge
+      - c6gd.medium 
       - c6gd.large
       - c6gd.xlarge
-      - c6gd.2xlarge
-      - c6gd.4xlarge
       - m6g.medium
       - m6g.large
       - m6g.xlarge
-      - m6gd.medium
       - m6gd.large
       - m6gd.xlarge
-      - t4g.nano
-      - t4g.micro
-      - t4g.small
-      - t4g.medium
-      - t4g.large
-      - t4g.xlarge
-      - c6gn.large
-      - c6gn.xlarge
-      - c6gn.4xlarge
-      - c7g.medium
-      - c7g.large
-      - c7g.xlarge
-      - c7g.2xlarge
-      - c7g.4xlarge
-      - m7g.medium
-      - m7g.large
-      - m7g.xlarge
-      - m7g.2xlarge
-      - m7g.4xlarge
-      - m7g.8xlarge
-      - c7gn.medium
-      - c7gn.large
-      - c7gn.xlarge
-      - c7gn.2xlarge
-      - c7gn.4xlarge
-      - c7gn.8xlarge
-      - c7gd.medium
-      - c7gd.large
-      - c7gd.xlarge
-      - c7gd.2xlarge
-      - c7gd.4xlarge
-      - c7gd.8xlarge
-      - m7gd.medium
-      - m7gd.large
-      - m7gd.xlarge
-      - m7gd.2xlarge
-      - m7gd.4xlarge
-      - m7gd.8xlarge
     ConstraintDescription: Must contain valid instance type
 Metadata:
   cfn-lint:
@@ -88,6 +49,7 @@ Metadata:
           default: Instance Configuration
         Parameters:
           - instanceType
+          - ImageId
           - SQS
       - Label:
           default: Network Configuration
@@ -106,6 +68,8 @@ Metadata:
         default: Subnet ID
       webAccessCidr:
         default: Web Access CIDR
+      ImageId:
+        default: AMI Image ID
 Rules:
   SubnetsInVPC:
     Assertions:
@@ -116,53 +80,11 @@ Rules:
                 - VpcId
             - Fn::RefAll: AWS::EC2::VPC::Id
         AssertDescription: All subnets must in the VPC
-Mappings:
-  RegionMap:
-    us-east-1:
-      ami: ami-08c058491b976c168
-    eu-west-1:
-      ami: ami-094a94ebdbf502472
-    us-west-1:
-      ami: ami-091ab5c276dd7bf2a
-    ap-southeast-1:
-      ami: ami-02182a228584b24b0
-    ap-northeast-1:
-      ami: ami-0b6d9f1a724143d22
-    us-west-2:
-      ami: ami-087076cf2e42a7487
-    sa-east-1:
-      ami: ami-08afb669e42fbbcb3
-    ap-southeast-2:
-      ami: ami-0a08f71bafa4db0c7
-    eu-central-1:
-      ami: ami-0372b5cc7b6087f3f
-    ap-northeast-2:
-      ami: ami-052eb8c922d3bdf01
-    us-east-2:
-      ami: ami-0d3516941b985923b
-    ca-central-1:
-      ami: ami-0459efebe968eaca1
-    eu-west-2:
-      ami: ami-026fe254ecd53a2a4
-    eu-west-3:
-      ami: ami-0a82b13793efacb65
-    ap-northeast-3:
-      ami: ami-01a594e9ed2526003
-    eu-north-1:
-      ami: ami-0703cf0fcd3138c70
-    eu-south-1:
-      ami: ami-0bf3b66d5ad31f122
-    eu-central-2:
-      ami: ami-0f5621109e0a071ee
-    eu-south-2:
-      ami: ami-05744c2f9dec5ff5c
-    ap-southeast-4:
-      ami: ami-0af7576d7e93b4b15
 Resources:
   ec2SingleSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Cribl LogStream Access
+      GroupDescription: Cribl Stream Access
       VpcId:
         Ref: vpcId
       SecurityGroupIngress:
@@ -171,7 +93,7 @@ Resources:
           ToPort: 9000
           CidrIp:
             Ref: webAccessCidr
-          Description: UI access to the LogStream instance
+          Description: UI access to the Cribl Stream instance
       SecurityGroupEgress:
         - IpProtocol: '-1'
           CidrIp: 0.0.0.0/0
@@ -238,13 +160,13 @@ Resources:
         RestrictPublicBuckets: true
       Tags:
         - Key: Name
-          Value: Cribl LogStream default destination bucket
-  LogstreamRole:
+          Value: Cribl Stream default destination bucket
+  StreamRole:
     Type: AWS::IAM::Role
     Properties:
       Path:
-        Fn::Sub: /logstream/${AWS::StackName}/
-      Description: Cribl LogStream default IAM role
+        Fn::Sub: /Stream/${AWS::StackName}/
+      Description: Cribl Stream default IAM role
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -293,14 +215,14 @@ Resources:
                   - Fn::Sub: arn:${AWS::Partition}:sqs:${AWS::Region}::${AWS::AccountId}::${SQS}
       Tags:
         - Key: Name
-          Value: Cribl LogStream IAM role
+          Value: Cribl Stream IAM role
   iamDefaultInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path:
-        Fn::Sub: /logstream/${AWS::StackName}/
+        Fn::Sub: /Stream/${AWS::StackName}/
       Roles:
-        - Ref: LogstreamRole
+        - Ref: StreamRole
   ec2WorkersAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -326,7 +248,7 @@ Resources:
             - LatestVersionNumber
       Tags:
         - Key: Name
-          Value: Cribl LogStream Worker Nodes ASG
+          Value: Cribl Stream Worker Nodes ASG
           PropagateAtLaunch: false
   ec2WorkersAutoScalingGroupLifecycleHook:
     Type: AWS::AutoScaling::LifecycleHook
@@ -335,7 +257,7 @@ Resources:
         Ref: ec2WorkersAutoScalingGroup
       DefaultResult: ABANDON
       HeartbeatTimeout: 3600
-      LifecycleHookName: cribl-logstream-worker-shutdown
+      LifecycleHookName: cribl-stream-worker-shutdown
       LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
   ec2WorkerslaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
@@ -343,10 +265,7 @@ Resources:
       LaunchTemplateData:
         InstanceInitiatedShutdownBehavior: terminate
         ImageId:
-          Fn::FindInMap:
-            - RegionMap
-            - Ref: AWS::Region
-            - ami
+          Ref: ImageId
         InstanceType:
           Ref: instanceType
         IamInstanceProfile:
@@ -359,7 +278,7 @@ Resources:
         UserData:
           Fn::Base64:
             Fn::Sub:
-              - "#cloud-config\nruncmd:\n  - /usr/local/bin/configure_logstream.sh -m single -b ${s3DefaultDestinationBucket}\n  - sleep 10\n  - cloud-init query -f \"$(cat /opt/cribl_build/users.json.j2)\"\
+              - "#cloud-config\nruncmd:\n  - /usr/local/bin/configure_stream.sh -m single -b ${s3DefaultDestinationBucket}\n  - sleep 10\n  - cloud-init query -f \"$(cat /opt/cribl_build/users.json.j2)\"\
                 \ > /opt/cribl/local/cribl/auth/users.json\n  - chown -R cribl:cribl /opt/cribl\n"
               - s3DefaultDestinationBucket:
                   Ref: s3DefaultDestinationBucket
@@ -367,13 +286,13 @@ Resources:
           - ResourceType: instance
             Tags:
               - Key: Name
-                Value: Cribl LogStream Worker Instance
+                Value: Cribl Stream Worker Instance
               - Key: Purpose
                 Value: Machine data analysis
   workerShutdownEventRule:
     Type: AWS::Events::Rule
     Properties:
-      Description: Cribl LogStream Worker Shutdown Event
+      Description: Cribl Stream Worker Shutdown Event
       EventPattern:
         source:
           - aws.autoscaling
@@ -408,10 +327,10 @@ Resources:
           ignore_checks:
             - E3030
     Properties:
-      Description: Cribl LogStream Worker Shutdown
+      Description: Cribl Stream Worker Shutdown
       InlineCode: "import boto3\nimport logging\nimport json\nimport time\nimport os\n\nssm = boto3.client('ssm')\nautoscaling = boto3.client('autoscaling')\n \n# Logging\nlog = logging.getLogger()\nlog.setLevel(logging.DEBUG)\n\
         \ndef handler(event, context):\n  log.debug(\"Received event {}\".format(json.dumps(event)))\n\n  command = ssm.send_command(\n    InstanceIds=[event['detail']['EC2InstanceId'],],\n    DocumentName='AWS-RunShellScript',\n\
-        \    Comment='Gracefully terminate Cribl LogStream worker node',\n    Parameters={\"commands\":[\"systemctl disable cribl\",\"systemctl daemon-reload\",\"systemctl stop cribl\"],\"workingDirectory\"\
+        \    Comment='Gracefully terminate Cribl Stream worker node',\n    Parameters={\"commands\":[\"systemctl disable cribl\",\"systemctl daemon-reload\",\"systemctl stop cribl\"],\"workingDirectory\"\
         :[\"\"],\"executionTimeout\":[\"3600\"]},\n    CloudWatchOutputConfig={\n        'CloudWatchOutputEnabled': True\n    }\n  )\n\n  command_id = command['Command']['CommandId']\n\n  for x in range(0,59):\n\
         \    time.sleep(10)\n    response = ssm.get_command_invocation(\n        CommandId=command_id,\n        InstanceId=event['detail']['EC2InstanceId'],\n    )\n    if response.get('Status') == 'Success':\n\
         \      break\n    else:\n      continue\n\n  autoscaling.complete_lifecycle_action(\n    LifecycleHookName=event['detail']['LifecycleHookName'],\n    AutoScalingGroupName=event['detail']['AutoScalingGroupName'],\n\
@@ -444,10 +363,10 @@ Resources:
       Timeout: 600
       Handler: index.handler
 Outputs:
-  logstreamWebUrlPublic:
+  StreamWebUrlPublic:
     Value:
       Fn::Sub: http://${LoadBalancerExternal.DNSName}:9000/login
-    Description: Cribl LogStream Web URL (PublicIp)
-  logstreamWebAccessCreds:
+    Description: Cribl Stream Web URL (PublicIp)
+  StreamWebAccessCreds:
     Value: admin / EC2 Instance ID
     Description: Default Web Access Credentials
